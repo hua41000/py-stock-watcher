@@ -44,3 +44,9 @@ PowerShell
 git add README.md
 git commit -m "docs: add professional project introduction"
 git push origin main
+
+This project includes a few commands to fetch data and analyze data.
+analyze_stocks -> update_historical_data -> compound_profit_price -> kelly_exp -> calculate_scores, these commands form a whole workflow to fetch stock price history, fluctuation, Yahoo finance rating, combined with local AI algorithm analysis.
+
+You can simply run "python manage.py fetch-all-data" to execute the whole workflow to perform your daily stock analysis.
+*As the public repo doesn't include my API key to the paid data center, it will cause an error when you run the code. 
