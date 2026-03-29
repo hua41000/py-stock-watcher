@@ -34,16 +34,8 @@ Frontend: HTML5, CSS3, JavaScript (AJAX)
 The primary objective of this project is to bridge the gap between raw financial data and informed decision-making. By leveraging AI to process complex fundamental indicators, py-stock-watcher aims to provide a systematic, emotion-free approach to identifying value in the stock market.
 
 How to use this in your Repo:
-Open your README.md file.
-
-Paste the content above.
-
-Commit and push:
-
-PowerShell
-git add README.md
-git commit -m "docs: add professional project introduction"
-git push origin main
+Create a venv for Python dependency.
+Then use the requirements.txt to install the dependencies
 
 This project includes a few commands to fetch data and analyze data.
 analyze_stocks -> update_historical_data -> compound_profit_price -> kelly_exp -> calculate_scores, these commands form a whole workflow to fetch stock price history, fluctuation, Yahoo finance rating, combined with local AI algorithm analysis.
