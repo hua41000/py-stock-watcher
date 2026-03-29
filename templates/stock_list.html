@@ -1,0 +1,317 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My Watchlist</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .nav-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: blue;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+</head>
+
+<body>
+    {% include 'includes/lib_css.html' %}
+    {% include 'includes/navbar.html' %}
+    <div class="container-fluid py-2">
+        <div class="d-flex flex-column align-items-start mb-4">
+            <h1 class=" display-6 fw-bold" style="padding-left: 2rem;">My Stock Watchlist</h1>
+
+            {% if stocks %}
+            <ul id="stockList">
+                {% for stock in stocks %}
+                <li onclick="loadAll('{{ stock.symbol }}','{{ stock.name }}');globalFn.updateBtnActive(event);">
+                    {{ stock.symbol }}
+                    <!-- <button onclick="analyzeHistory('{{ stock.symbol }}')">10Y History</button>
+                <button onclick="getCurPrice('{{ stock.symbol }}')">Cur Price</button> -->
+                </li>
+                {% endfor %}
+            </ul>
+            <!-- <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Name</th>
+                    <th>Currency</th>
+                    <th>Exchange</th>
+                    <th>Date Added</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stock in stocks %}
+                <tr>
+                    <td><strong>{{ stock.symbol }}</strong></td>
+                    <td>{{ stock.name }}</td>
+                    <td>{{ stock.currency }}</td>
+                    <td>{{ stock.exchange }}</td>
+                    <td>{{ stock.created_at|date:"M d, Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table> -->
+            {% else %}
+            <p>No stocks saved yet. <a href="/stock-symbol/">Go add some!</a></p>
+            {% endif %}
+            <hr>
+            <div class="detailInfoContainer">
+                <div id="details-box">
+                    <h3>Price Change Details: <span id="detail-symbol"></span></h3>
+                    <table id="detail-table">
+                    </table>
+                </div>
+
+                <div id="analysis-box" style="display:none; border: 2px solid #333; padding: 15px; margin-top: 20px;">
+                    <h2>History Analysis: <span id="analysis-symbol"></span></h2>
+                    <p><strong>Global High:</strong> $<span id="global-high"></span></p>
+                    <p><strong>Current Price:</strong> $<span id="current-price">20.0</span></p>
+                    <p><strong>Global Low:</strong> $<span id="global-low"></span></p>
+
+                    <h3>Yearly Breakdown</h3>
+                    <table border="1" style="width:100%; border-collapse: collapse;"
+                        class="table table-hover table-striped align-middle my-0">
+                        <thead>
+                            <tr class="table-dark">
+                                <th>Year</th>
+                                <th>Highest Price</th>
+                                <th>Highest Price/Cur Price Percent</th>
+                                <th>Lowest Price</th>
+                                <th>Lowest Price/Cur Price Percent</th>
+                            </tr>
+                        </thead>
+                        <tbody id="yearly-table-body">
+                        </tbody>
+                    </table>
+
+                    <h3>AI Prompt</h3>
+                    <div style="text-align: end;"><button id="copyBtn" class="btn btn-primary" onclick="globalFn.copyToClipboard('copyBtn', 'prompDetails')">Copy Prompt</button></div>
+                    <p>
+                    <div id="prompDetails"></div>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'includes/footer.html' %}
+
+    <script>
+        let STOCK_LIST_GLOBAL = {
+            long_term_high: 0,
+            long_term_low: 0,
+            cur_price: 0,
+            year_price: [],
+        }
+        let PERCENT_THRESHOLD = 10;//10 mean 10 percent;
+
+        function loadAll(symbol, name) {
+            // let scopeArr = [];
+            Promise.all([
+                loadDetails(symbol, name),
+                analyzeHistory(symbol),
+                getCurPrice(symbol)
+            ]).then((data) => {
+                console.log(data);
+                console.log("STOCK_LIST_GLOBAL: ",STOCK_LIST_GLOBAL);
+                let yearly_high = [];
+                let yearly_low = [];
+                let tempArray = STOCK_LIST_GLOBAL.year_price;
+                console.log("Received in 2nd then:", tempArray);
+                console.log("Received in 2nd-0 then:", tempArray.length);
+
+                // setTimeout(()=>{
+                tempArray.forEach(item => {
+                    const container = document.getElementById(item.year + '_high_percent');
+                    container.innerHTML = (((item.high - STOCK_LIST_GLOBAL.cur_price) / STOCK_LIST_GLOBAL.cur_price) * 100).toFixed(2) + " %";
+
+                    const container_low = document.getElementById(item.year + '_low_percent');
+                    let diff_percent = (((STOCK_LIST_GLOBAL.cur_price - item.low) / STOCK_LIST_GLOBAL.cur_price) * 100).toFixed(2);
+                    if (diff_percent < PERCENT_THRESHOLD && item.low == STOCK_LIST_GLOBAL.long_term_low) {
+                        container_low.classList.add('highlight-bold');
+                    }
+                    container_low.innerHTML = diff_percent + " %";
+                    console.log(item)
+                })
+                // }, 2000)
+                // return tempArray;
+                // for (const item_num of tempArray) {
+                //     console.log(item_num);
+                // }
+                // console.log("yearly_high", yearly_high);
+                globalFn.generatePrompt("#prompDetails", symbol)
+
+            }).catch((error) => {
+                console.error("Something went wrong:", error);
+            });
+        }
+        function loadDetails(symbol, name) {
+            const container = document.getElementById('details-box');
+            const label = document.getElementById('detail-symbol');
+            const table = document.getElementById('detail-table');
+
+            // 1. Show "Loading..."
+            container.style.display = 'block';
+            label.innerText = symbol + " - " + name;
+            table.innerHTML = '<tr><td>Loading data...</td></tr>';
+
+            // 2. Fetch data from our internal Django view
+            return fetch(`/get-stock-details/?symbol=${symbol}`)
+                .then(response => response.json())
+                .then(data => {
+                    // API returns a list like [{ "1D": 1.5, "5D": ... }]
+                    if (data && data.length > 0) {
+                        const info = data[0];
+
+                        // 3. Build the table HTML dynamically
+                        let html = `
+                    <tr>
+                        <th>1 Day</th> <th>5 Day</th> <th>1 Month</th> 
+                        <th>3 Month</th> <th>6 Month</th> <th>YTD</th> <th>1 Year</th>
+                        <th>3 Year</th><th>5 Year</th><th>10 Year</th><th>Max</th>
+                    </tr>
+                    <tr>
+                        <td>${info['1D']}%</td>
+                        <td>${info['5D']}%</td>
+                        <td>${info['1M']}%</td>
+                        <td>${info['3M']}%</td>
+                        <td>${info['6M']}%</td>
+                        <td>${info['ytd']}%</td>
+                        <td>${info['1Y']}%</td>
+                        <td>${info['3Y']}%</td>
+                        <td>${info['5Y']}%</td>
+                        <td class="mark_10Y">${info['10Y']}%</td>
+                        <td>${info['max']}%</td>
+                    </tr>
+                `;
+                        table.innerHTML = html;
+                        if (info['10Y'] < PERCENT_THRESHOLD) {//10 mean 10 percent;
+                            document.getElementsByClassName("mark_10Y")[0].classList.add('negative_num');
+                        } else {
+                            document.getElementsByClassName("mark_10Y")[0].classList.remove('negative_num');
+                        }
+                    } else {
+                        table.innerHTML = '<tr><td>No details found for this symbol.</td></tr>';
+                    }
+                })
+                // .then(()=>{
+                //     new Promise((resolve, reject)=>{
+                //         resolve("Done Load Details");
+                //     })
+                // })
+                .catch(err => {
+                    console.error(err);
+                    table.innerHTML = '<tr><td>Error loading data.</td></tr>';
+                });
+        }
+
+        function analyzeHistory(symbol) {
+            const box = document.getElementById('analysis-box');
+            const tbody = document.getElementById('yearly-table-body');
+
+            // Reset UI
+            box.style.display = 'block';
+            document.getElementById('analysis-symbol').innerText = symbol + " (Loading...)";
+            tbody.innerHTML = "<tr><td colspan='3'>Calculating...</td></tr>";
+
+            // Call the Backend
+            return fetch(`/historical-analysis/?symbol=${symbol}&years=10`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update Global Stats
+                    document.getElementById('analysis-symbol').innerText = data.symbol;
+                    document.getElementById('global-high').innerText = data.global_high.toFixed(2);
+                    document.getElementById('global-low').innerText = data.global_low.toFixed(2);
+                    STOCK_LIST_GLOBAL.long_term_high = data.global_high;
+                    STOCK_LIST_GLOBAL.long_term_low = data.global_low;
+                    // Build Yearly Table
+                    let rows = '';
+                    // Sort years descending (newest first)
+                    const years = Object.keys(data.yearly_stats).sort().reverse();
+
+                    years.forEach(year => {
+                        const stats = data.yearly_stats[year];
+                        STOCK_LIST_GLOBAL.year_price.push({ "year": year, "high": stats.high, "low": stats.low });
+                        rows += `
+                    <tr>
+                        <td>${year}</td>
+                        <td style="color:green" class="${stats.high == STOCK_LIST_GLOBAL.long_term_high ? 'highlight-bold' : ''}">$${stats.high.toFixed(2)}</td>
+                        <td id="${year}_high_percent"></td>
+                        <td style="color:red" class="${stats.low == STOCK_LIST_GLOBAL.long_term_low ? 'highlight-bold' : ''}">$${stats.low.toFixed(2)}</td>
+                        <td id="${year}_low_percent"></td>
+                    </tr>
+                `;
+                    });
+                    tbody.innerHTML = rows;
+                })
+                // .then(()=>{
+                //     new Promise((resolve, reject)=>{
+                //         resolve("Done History Anaysis");
+                //     })
+                // })
+                .catch(error => {
+                    console.error(error);
+                    tbody.innerHTML = "<tr><td colspan='3'>Error loading data.</td></tr>";
+                });
+        }
+
+        function getCurPrice(symbol) {
+            return fetch(`/current-price/?symbol=${symbol}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update Global Stats
+                    cur_price = data[0].price
+                    document.getElementById('current-price').innerText = cur_price;
+                    STOCK_LIST_GLOBAL.cur_price = cur_price;
+                    console.log("Cur Price: ", cur_price)
+                    // // Build Yearly Table
+                    // let rows = '';
+                    // // Sort years descending (newest first)
+                    // const years = Object.keys(data.yearly_stats).sort().reverse();
+
+                    // years.forEach(year => {
+                    //     const stats = data.yearly_stats[year];
+                    //     rows += `
+                    //         <tr>
+                    //             <td>${year}</td>
+                    //             <td style="color:green">$${stats.high}</td>
+                    //             <td style="color:red">$${stats.low}</td>
+                    //         </tr>
+                    //     `;
+                    // });
+                    // tbody.innerHTML = rows;
+                })
+                // .then(()=>{
+                //     new Promise((resolve, reject)=>{
+                //         resolve("Done Get Cur Price");
+                //     })
+                // })
+                .catch(error => {
+                    console.error(error);
+                    tbody.innerHTML = "<tr><td colspan='3'>Error loading data.</td></tr>";
+                });
+        }
+
+    </script>
+</body>
+
+</html>

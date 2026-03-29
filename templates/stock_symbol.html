@@ -1,0 +1,138 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Search Stock</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+</head>
+
+<body>
+    {% include 'includes/lib_css.html' %}
+    {% include 'includes/navbar.html' %}
+    <div class="container py-5">
+        <div class="d-flex flex-column align-items-start mb-4">
+            <h1 class="mb-3 display-6 fw-bold">Search Stock Symbol</h1>
+
+            <form method="get" class="d-flex gap-2">
+                <input class="form-control" type="text" name="query" value="{{ query|default:'' }}" placeholder="Symbol (e.g. T)" required>
+                <input class="form-control" type="text" name="exchange" value="{{ exchange|default:'' }}" placeholder="Exchange (e.g. TSX)">
+                <button class="btn btn-primary" type="submit">Search</button>
+            </form>
+            <hr class="w-100">
+
+            {% if search_results %}
+            <ul class="list-unstyled">
+                {% for stock in search_results %}
+                <li class="mb-3 d-flex align-items-center">
+                    <span class="me-3">
+                        <strong>{{ stock.symbol }}</strong> - {{ stock.name }} ({{stock.currency}}) - {{stock.exchangeShortName}}
+                    </span>
+
+                    <button class="btn btn-sm btn-primary me-1"
+                        onclick="saveStock(this, '{{ stock.symbol }}', '{{ stock.name }}', '{{ stock.currency }}', '{{ stock.exchangeShortName }}')">
+                        Add to DB
+                    </button>
+                    
+                    <button class="btn btn-sm btn-info text-white me-1"
+                        onclick="saveUsStock(this, '{{ stock.symbol }}', '{{ stock.name }}', '{{ stock.currency }}', '{{ stock.exchangeShortName }}')">
+                        Add to U.S. DB
+                    </button>
+                    
+                    <button class="btn btn-sm btn-secondary"
+                        onclick="saveCustomStock(this, '{{ stock.symbol }}', '{{ stock.name }}', '{{ stock.currency }}', '{{ stock.exchangeShortName }}')">
+                        Add to Custom DB
+                    </button>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        // The JavaScript stays mostly the same, ensuring the "Success" state is also a solid button
+        function saveStock(btn, symbol, name, currency, exchange) {
+            // 1. Get CSRF Token (Django Security)
+            const csrftoken = getCookie('csrftoken');
+
+            // 2. Send Data (AJAX)
+            fetch('/add-stock-ajax/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({ symbol, name, currency, exchange })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    btn.innerText = "Saved!";
+                    // btn-success is solid green, satisfies your requirement
+                    btn.className = "btn btn-sm btn-success me-1"; 
+                    btn.disabled = true;
+                } else if (data.status === 'exists') {
+                    alert(data.message);
+                }
+            });
+        }
+
+        function saveUsStock(btn, symbol, name, currency, exchange) {
+            // 1. Get CSRF Token (Django Security)
+            const csrftoken = getCookie('csrftoken');
+
+            // 2. Send Data (AJAX)
+            fetch('/add-us-stock-ajax/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({ symbol, name, currency, exchange })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    btn.innerText = "Saved!";
+                    btn.className = "btn btn-sm btn-success me-1";
+                    btn.disabled = true;
+                } else if (data.status === 'exists') {
+                    alert(data.message);
+                }
+            });
+        }
+
+        function saveCustomStock(btn, symbol, name, currency, exchange) {
+            // 1. Get CSRF Token (Django Security)
+            const csrftoken = getCookie('csrftoken');
+            // 2. Send Data (AJAX)
+            fetch('/add-custom-stock-ajax/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({ symbol, name, currency, exchange })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    btn.innerText = "Saved!";
+                    btn.className = "btn btn-sm btn-success";
+                    btn.disabled = true;
+                } else if (data.status === 'exists') {
+                    alert(data.message);
+                }
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+
+    {% include 'includes/footer.html' %}
+</body>
+</html>

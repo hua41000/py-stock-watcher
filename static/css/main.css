@@ -1,0 +1,121 @@
+.positive_num {
+    background-color: rgba(0, 240, 128, 0.5);
+}
+
+.negative_num {
+    background-color: rgba(250, 60, 60, 0.5);
+}
+
+.highlight-bold {
+    font-weight: 700;
+    background-color: #ddd;
+}
+
+html {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    font-family: sans-serif;
+    padding: 0px;
+}
+
+h1 {
+    color: #333;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.safe {
+    color: green;
+    font-weight: bold;
+}
+
+.recovery {
+    color: blue;
+    font-weight: bold;
+}
+
+.neutral {
+    color: gray;
+}
+
+.detailInfoContainer {
+    width: 80%;
+    margin: 0 auto;
+}
+
+#stockList {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+#stockList li {
+    display: block;
+    list-style: none;
+    min-width: 90px;
+    padding: 2px;
+    /* margin: 0 10px; */
+}
+
+#stockList li:hover {
+    cursor: pointer;
+    background-color: bisque;
+}
+
+#stockList li:active,
+#stockList li:focus {
+    background-color: bisque;
+}
+
+.activeBtn {
+    background-color: bisque;
+}
+
+.navbar .container .navbar-brand {
+    width: 200px;
+    text-align: center;
+    display: inline-block;
+    ;
+}
+
+.verdict-badge {
+    white-space: normal !important; /* Allows text to wrap */
+    line-height: 1.2 !important;    /* Prevents lines from being too squashed */
+    text-align: left !important;       /* Centers the text */
+    min-width: 100px;               /* Optional: Ensures it has some width */
+    display: inline-block;          /* Ensures proper spacing */
+}
+
+.bg-purple {
+    background-color: #af2ee3 !important; /* BlueViolet */
+    color: white;
+}
+
+.bg-light-grey {
+    background-color: #757575 !important; /* BlueViolet */
+}
+
+.fs-xs { font-size: 0.75rem !important; } /* 12px */
+.fs-xxs { font-size: 0.625rem !important; } /* 10px */

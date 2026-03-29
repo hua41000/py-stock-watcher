@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>AI Transparency Report</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    
+    <style>
+/* .badge-buy {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-wait {
+    background-color: #6c757d;
+    color: white;
+}
+
+.score-high {
+    color: #198754;
+    font-weight: bold;
+}
+
+.score-low {
+    color: #6c757d;
+} */
+    </style>
+</head>
+
+<body class="bg-light">
+    {% include 'includes/lib_css.html' %}
+    {% include 'includes/navbar.html' %}
+
+    <div class="container bg-white p-4 shadow rounded">
+        {% if no_data %}
+        <div class="alert alert-warning">No training data found. Please run the AI training script first.</div>
+        {% else %}
+
+        <div class="row mb-4 border-bottom pb-3">
+            <div class="col-md-8">
+                <h2 class="text-primary">🧠 AI Transparency Report</h2>
+                <p class="text-muted">Analysis Date: {{ log.timestamp }}</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="card bg-light">
+                    <div class="card-body py-2">
+                        <h5 class="m-0">Win Rate: <span class="text-success">{{ log_precision_str }}%</span></h5>
+                        <small>Overall Precison: {{ log_precision_str }}%</small><br/>
+                        <small>Overall Accuracy: {{ log_accuracy_str }}%</small><br/>
+                        <small>Overall Recall: {{ log_recall_str }}%</small><br/>
+                        <small>Overall F1: {{ log_f1_str }}%</small><br/>
+                        <small>Overall AUC: {{ log_auc_str }}%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Ticker</th>
+
+                        <th>Report Date</th>
+
+                        <th>Confidence</th>
+                        <th>Prediction</th>
+                        <th>Actual Outcome</th>
+                        <th>AI Reliability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results %}
+                    <tr>
+                        <td class="fw-bold">{{ row.ticker }}</td>
+                        <td>{{ row.date|date:"M d, Y" }}</td>
+
+                        <td>
+                            {% if row.prob_score >= 60 %}
+                            <span class="text-success fw-bold">{{ row.prob_display }}%</span>
+                            {% else %}
+                            <span class="neutral">{{ row.prob_display }}%</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if row.prediction == 1 %}
+                            <span class="badge bg-success px-2 py-1 rounded">BUY</span>
+                            {% else %}
+                            <span class="badge bg-secondary px-2 py-1 rounded">WAIT</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if row.actual_target == 1 %}
+                            📈 Price Rose
+                            {% else %}
+                            📉 Price Fell
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if row.correct == 1 %}
+                            <span class="text-success fw-bold">✅ TRUSTWORTHY</span>
+                            {% else %}
+                            <span class="text-danger fw-bold">❌ UNTRUSTWORTHY</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+</body>
+
+</html>

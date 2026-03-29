@@ -1,0 +1,139 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Stock Analysis Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <style>
+        .score-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        .bg-great { background-color: #198754; } /* Green */
+        .bg-good { background-color: #20c997; } /* Teal */
+        .bg-bad { background-color: #dc3545; }  /* Red */
+        .bg-neutral { background-color: #ffc107; color: black; } /* Yellow */
+    </style>
+</head>
+<body class="bg-light">
+{% include 'includes/lib_css.html' %}
+{% include 'includes/navbar.html' %}
+<div class="container py-5">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-6 fw-bold">Stock Score Dashboard</h1>
+            <p class="text-muted">
+                Last Updated: 
+                {% if last_updated %}
+                    {{ last_updated|date:"M d, Y H:i" }} (GMT)
+                {% else %}
+                    <span class="text-danger">No data yet. Run "python manage.py calculate_scores"</span>
+                {% endif %}
+            </p>
+        </div>
+        
+        <div class="card p-3 shadow-sm">
+            <small class="fw-bold text-uppercase text-muted">AI Model Criteria (12-Mo Target)</small>
+            <div class="d-flex gap-3 mt-2">
+                <div class="d-flex align-items-center"><span class="badge bg-success me-1">> 80</span> Strong Buy</div>
+                <div class="d-flex align-items-center"><span class="badge bg-danger me-1">< 20</span> High Risk</div>
+            </div>
+        </div>
+    </div>
+    <code>.\venv\Scripts\activate</code><br/>
+    <code>python manage.py calculate_scores</code>
+
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped align-middle my-0">
+                <thead class="table-dark" style="position: sticky;top: 0;">
+                    <tr>
+                        <th class="py-3 ps-4">Symbol</th>
+                        <th class="py-3 text-center">AI Score</th>
+                        <th class="py-3 text-center">BUY/SELL Score (RAW)</th>
+                        <th class="py-3">Recommendation</th>
+                        <th class="py-3">P/E Ratio</th>
+                        <th class="py-3">ROE</th>
+                        <th class="py-3">Debt/Equity</th>
+                        <th class="py-3">Rev Growth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in stocks %}
+                    <tr>
+                        <td class="fw-bold ps-4">{{ stock.symbol }}</td>
+
+                        <td class="text-center">
+                            <div class="score-circle mx-auto 
+                                {% if stock.score >= 80 %}bg-great
+                                {% elif stock.score >= 60 %}bg-good
+                                {% elif stock.score <= 20 %}bg-bad
+                                {% else %}bg-neutral{% endif %}">
+                                {{ stock.score }}
+                            </div>
+                        </td>
+
+                        <td class="text-center" style="display: flex; gap: 10px; justify-content: center;">
+                            <div class="score-circle 
+                                {% if stock.buy_score >= 80 %}bg-great
+                                {% elif stock.buy_score >= 60 %}bg-good
+                                {% elif stock.buy_score <= 20 %}bg-bad
+                                {% else %}bg-neutral{% endif %}">
+                                {{ stock.buy_score }}
+                            </div>
+                            <div class="score-circle 
+                                {% if stock.sell_score >= 80 %}bg-bad
+                                {% elif stock.sell_score >= 60 %}bg-bad
+                                {% elif stock.sell_score <= 20 %}bg-great
+                                {% else %}bg-neutral{% endif %}">
+                                {{ stock.sell_score }}
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if stock.score >= 80 %}
+                                <span class="badge bg-success">Strong Buy</span>
+                            {% elif stock.score <= 20 %}
+                                <span class="badge bg-danger">High Risk</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ stock.recommendation }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ stock.pe_ratio|floatformat:1 }}x</td>
+                        
+                        <td class="{% if stock.roe < 0 %}text-danger fw-bold{% endif %}">
+                            {{ stock.roe|floatformat:2 }}%
+                        </td>
+
+                        <td>{{ stock.debt_to_equity|floatformat:1 }}%</td>
+                        
+                        <td class="{% if stock.revenue_growth > 0.1 %}text-success fw-bold{% endif %}">
+                            {{ stock.revenue_growth|floatformat:1 }}%
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <h4 class="text-muted">No stocks found in database.</h4>
+                            <p>Run <code>python manage.py calculate_scores</code> in your terminal.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

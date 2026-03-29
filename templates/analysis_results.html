@@ -1,0 +1,167 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Analysis Results</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .safe {
+            color: green;
+            font-weight: bold;
+        }
+
+        .recovery {
+            color: blue;
+            font-weight: bold;
+        }
+
+        .neutral {
+            color: gray;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+</head>
+
+<body class="bg-light">
+    {% include 'includes/lib_css.html' %}
+    {% include 'includes/navbar.html' %}
+    <div class="container py-5">
+        <h1 class="display-6 fw-bold">📊 Stock Analysis Dashboard</h1>
+        <p class="text-muted">Last Updated: From Yahoo Finance at:
+            <span>
+                {% if last_updated %}
+                {{ last_updated|date:"M d, Y H:i" }}
+                {% else %}
+                No data yet
+                {% endif %}
+            </span>
+            <span>(GMT)</span>
+        </p>
+        <code>.\venv\Scripts\activate</code><br />
+        <code>python manage.py analyze_stocks</code><br />
+        <code>python manage.py update_historical_data</code>
+        
+        <div class="card shadow border-0">
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped align-middle my-0">
+                    <thead class="table-dark"  style="position: sticky;top: 0;">
+                        <tr>
+                            <th class="py-3 ps-4">Ticker</th>
+                            <th class="py-3">Current Price</th>
+                            <th class="py-3">10Y High/Low Price</th>
+                            <th class="py-3">Analyst Target (12-Mo)</th>
+                            <th class="py-3">Upside Potential</th>
+                            <th class="py-3">Safety Verdict</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock in stocks %}
+                        <tr>
+                            <td class="fw-bold ps-4"><strong>{{ stock.ticker }}</strong></td>
+                            <td>
+                                {% if stock.current_price %}
+                                ${{ stock.current_price }}
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if stock.period_high %}
+                                ${{ stock.period_high }}
+                                {% else %}
+                                -
+                                {% endif %}
+                                /
+                                {% if stock.period_low %}
+                                ${{ stock.period_low }}
+
+                                    {% if stock.price_diff_percentage >= 0 %}
+                                        <span class="text-success">
+                                            <!-- <i class="bi bi-arrow-up"></i>  -->
+                                            &nbsp; ▲ {{ stock.price_diff_percentage|floatformat:1 }}%
+                                        </span>
+
+                                    {% elif stock.price_diff_percentage < 0 %}
+                                        <span class="text-danger">
+                                            <!-- <i class="bi bi-arrow-down"></i>  -->
+                                            &nbsp; ▼ {{ stock.price_diff_percentage|floatformat:1 }}%
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if stock.analyst_target %}
+                                ${{ stock.analyst_target }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if stock.upside_percent > 0 %}
+                                <span style="color:green">▲ {{ stock.upside_percent|floatformat:2 }}%</span>
+                                {% else %}
+                                <span style="color:red">▼ {{ stock.upside_percent|floatformat:2 }}%</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if "Safe" in stock.verdict %}
+                                <span class="safe">{{ stock.verdict }}</span>
+                                {% elif "Recovery" in stock.verdict %}
+                                <span class="recovery">{{ stock.verdict }}</span>
+                                {% else %}
+                                <span class="neutral">{{ stock.verdict }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No analysis data found. Run <code>python manage.py analyze_stocks</code>
+                                first!</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <br>
+        <a href="/">← Back to Home</a>
+        {% include 'includes/footer.html' %}
+    </div>
+</body>
+
+</html>

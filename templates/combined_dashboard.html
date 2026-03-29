@@ -1,0 +1,522 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Master Stock Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+
+<body class="bg-light">
+    {% include 'includes/lib_css.html' %}
+    {% include 'includes/navbar.html' %}
+
+    <div class="container-fluid p-4 rounded">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="display-6 fw-bold">Master Stock Analysis</h1>
+            <span class="text-muted">Updated: {{ last_updated|date:"M d, H:i" }} (GMT)</span>
+        </div>
+
+        <!-- <div>
+            <form method="get" class="d-flex align-items-center gap-2">
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" name="order" value="true" id="orderCheck" 
+                    {% if request.GET.order %}checked{% endif %} 
+                    onchange="this.form.submit()">
+                    <label class="form-check-label" for="orderCheck">
+                        Sort by Recommendation
+                    </label>
+                </div>
+            </form>
+        </div> -->
+        <form method="get">
+            <div class="card shadow border-0">
+                <div class="card-body p-0">
+                    <table class="table table-hover table-striped align-middle my-0">
+                        <thead class="table-dark" style="position: sticky;top: 0;">
+                            <tr>
+                                <th class="py-3 ps-4">Ticker</th>
+                                <th class="py-3">Current Price</th>
+                                <th class="py-3">
+
+                                    <!-- <form method="get" class="d-flex align-items-center gap-2"> -->
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input" 
+                                                type="checkbox" 
+                                                name="order_low_diff" 
+                                                value="true" 
+                                                id="order_low_diff_check" 
+                                                {% if request.GET.order_low_diff %}checked{% endif %} 
+                                                onchange="this.form.submit()">
+                                        <label class="form-check-label" for="order_low_diff_check">
+                                            10Y High/Low Price
+                                        </label>
+                                    </div>
+                                    <!-- </form> -->
+                                </th>
+                                <th class="py-3">
+                                    <div class="form-check mb-0 px-0">
+                                        <input class="form-check-input" type="checkbox" name="order_compound_rate" value="true"
+                                            id="compoundRateCheck" {% if request.GET.order_compound_rate %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <br/><label class="form-check-label" for="compoundRateCheck">
+                                            Compound <br/>Profit Rate
+                                        </label>
+                                    </div>
+                                </th>
+                                <th class="py-3"> 
+                                    <input class="form-check-input" 
+                                            type="checkbox" 
+                                            name="order_rating" 
+                                            value="true" 
+                                            id="order_rating" 
+                                            {% if request.GET.order_rating %}checked{% endif %} 
+                                            onchange="this.form.submit()">
+                                    <label class="form-check-label" for="order_rating">
+                                        Yahoo Rating
+                                    </label>
+                                </th>
+                                <th class="py-3">Analyst Target (12-Mo)</th>
+                                <th class="py-3">
+
+                                    <!-- <form method="get" class="d-flex align-items-center gap-2"> -->
+                                    <div class="form-check mb-0  px-0">
+                                        <!-- <input class="form-check-input" type="checkbox" name="order_upside" value="true"
+                                            id="upsideCheck" {% if request.GET.order_upside %}checked{% endif %}
+                                            onchange="this.form.submit()" disabled> -->
+                                        <label class="form-check-label" for="order_upside">
+                                            Upside Potential
+                                        </label>
+                                    </div>
+                                    <!-- </form> -->
+                                </th>
+                                
+                                <th class="py-3">
+                                    <!-- <form method="get" class="d-flex align-items-center gap-2"> -->
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input" 
+                                            type="checkbox" 
+                                            name="divident_rate" 
+                                            value="true" 
+                                            id="divident_rate" 
+                                            {% if request.GET.divident_rate %}checked{% endif %} 
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="divident_rate">
+                                            Divident
+                                        </label>
+                                    </div>
+                                    <!-- </form> -->
+                                </th>
+                                <th class="py-3">
+                                    <!-- <input class="form-check-input" 
+                                            type="checkbox" 
+                                            name="order_verdict" 
+                                            value="true" 
+                                            id="order_verdict" 
+                                            {% if request.GET.order_verdict %}checked{% endif %} 
+                                            onchange="this.form.submit()" disabled> -->
+                                    <label class="form-check-label" for="order_verdict">
+                                        Safety Verdict
+                                    </label>
+                                    
+                                </th>
+                                <th class="py-3">
+                                    <!-- <form method="get" class="d-flex align-items-center gap-2"> -->
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input" type="checkbox" name="order" value="true"
+                                            id="orderCheck" {% if request.GET.order %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="orderCheck">
+                                            AI Recomd
+                                        </label>
+                                    </div>
+                                    <!-- </form> -->
+                                </th>
+                                <th class="py-3">
+                                    <div class="form-check mb-0 px-0">
+                                        <!-- <input class="form-check-input" type="checkbox" name="ai_score_reliable" value="true"
+                                            id="aiScoreCheck" {% if request.GET.ai_score_reliable %}checked{% endif %}
+                                            onchange="this.form.submit()" disabled> -->
+                                        <label class="form-check-label" for="aiScoreCheck">
+                                            AI Score<br/>
+                                            (Buy / Sell)
+                                        </label>
+                                    </div>
+                                </th>
+                                <th class="py-3">
+                                    
+                                    <div class="form-check mb-0 px-0">
+                                        <!-- <input class="form-check-input" type="checkbox" name="order_trust_ratio" value="true"
+                                            id="trustRatioCheck" {% if request.GET.order_trust_ratio %}checked{% endif %}
+                                            onchange="this.form.submit()" disabled> -->
+                                        <label class="form-check-label" for="trustRatioCheck">
+                                            AI <br/>Reliability
+                                        </label>
+                                    </div>
+                                </th>
+                                
+                                <!-- <th class="py-3">Recommendation</th> -->
+                                <th class="py-3">
+                                    <input class="form-check-input" type="checkbox" name="order_kelly_ratio" value="true"
+                                        id="kellyRatioCheck" {% if request.GET.order_kelly_ratio %}checked{% endif %}
+                                        onchange="this.form.submit()">
+                                    <label class="form-check-label" for="kellyRatioCheck">
+                                        Kelly Expt.
+                                    </label>
+                                </th>
+                                <th class="py-3">Kelly Expt. Reliability</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stock in stocks %}
+                            <tr>
+                                <td class="fw-bold">{{ stock.ticker }}</td>
+                                <td>
+                                    {% if stock.current_price %}
+                                    ${{ stock.current_price }}
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                </td>
+                                <td style="font-size: 12px;">
+                                    <div>
+                                    {% if stock.period_high %}
+                                    ${{ stock.period_high }}
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                    </div>
+                                    <div>
+                                    {% if stock.period_low %}
+                                    ${{ stock.period_low }}
+
+                                    {% if stock.price_diff_percentage >= 0 %}
+                                    <span class="text-success">
+                                        <!-- <i class="bi bi-arrow-up"></i>  -->
+                                        &nbsp; ▲ {{ stock.price_diff_percentage|floatformat:1 }}%
+                                    </span>
+
+                                    {% elif stock.price_diff_percentage < 0 %} <span class="text-danger">
+                                        <!-- <i class="bi bi-arrow-down"></i>  -->
+                                        &nbsp; ▼ {{ stock.price_diff_percentage|floatformat:1 }}%
+                                        </span>
+                                        {% endif %}
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if stock.compound_profit_rate %}
+                                        <div style="font-weight: bold; color: #2c3e50;">
+                                            {% widthratio stock.compound_profit_rate 1 100 %}% <small class="text-muted">CAGR</small>
+                                        </div>
+                                        
+                                        <div class="fs-xs text-muted">
+                                            Proj: ${{ stock.projected_price_by_profit|floatformat:2 }}
+                                        </div>
+
+                                        <div class="fs-xs">
+                                            {% if stock.profit_projection_upside >= 0 %}
+                                                <span class="text-success fw-bold">▲ {{ stock.profit_projection_upside|floatformat:1 }}%</span>
+                                            {% else %}
+                                                <span class="text-danger fw-bold">▼ {{ stock.profit_projection_upside|floatformat:1 }}%</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="fs-sm text-muted">
+                                            {% if stock.profit_projection_upside >= 0 %}
+                                                <span class="badge bg-success text-white">{{ stock.analysis_note_compound|default:"No consistent growth" }}</span>
+                                            {% else %}
+                                                <span class="badge bg-danger text-white">{{ stock.analysis_note_compound|default:"No consistent growth" }}</span>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <span class="badge bg-danger text-white text-wrap">
+                                            {{ stock.analysis_note_compound|default:"No consistent growth" }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td> 
+                                    <div class="text-muted fs-xxs"><b>Latest Rating</b></div>
+                                    {% if stock.analyst_rating|lower == "strong buy" %}
+                                        <span class="badge bg-success text-white verdict-badge">
+                                            {{ stock.analyst_rating }}
+                                        </span>
+                                    {% elif stock.analyst_rating|lower == "buy" %}
+                                        <span class="badge bg-primary text-white verdict-badge">
+                                            {{ stock.analyst_rating }}
+                                        </span>
+                                    {% elif stock.analyst_rating|lower == "underperform" %}
+                                        <span class="badge bg-danger text-white verdict-badge">
+                                            <i class="bi bi-exclamation-triangle-fill" style="color: #fff;"></i>
+                                            {{ stock.analyst_rating }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary text-white verdict-badge">
+                                            {{ stock.analyst_rating }}
+                                        </span>
+                                    {% endif %}
+    
+                                    <div class="text-muted fs-xxs">Price Action - compt.</div>
+                                    {% if stock.price_action|lower == "raises" %}
+                                        <span class="badge bg-success text-white verdict-badge">
+                                            {{ stock.price_action }}
+                                        </span>
+                                    {% elif stock.price_action|lower == "lowers" %}
+                                        <span class="badge bg-danger text-white verdict-badge">
+                                            <i class="bi bi-exclamation-triangle-fill" style="color: #fff;"></i>
+                                            {{ stock.price_action }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary text-white verdict-badge">
+                                            {{ stock.price_action }}
+                                        </span>
+                                    {% endif %}
+
+                                    <div class="text-muted fs-xxs">Price Target - compt.</div>
+                                    <div class="fs-xs">
+                                        {% if stock.previous_target and stock.price_action != "Maintains" %}
+                                            {{ stock.previous_target }} &rarr; {{ stock.analyst_target }}
+                                        {% else %}
+                                            {{ stock.analyst_target }}
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if stock.analyst_target %}
+                                        <div style="font-weight: bold;">
+                                            ${{ stock.analyst_target }}
+                                        </div>
+                                        
+                                        <div style="font-size: 0.85em; color: #6c757d;">
+                                            <div title="Low Target">L: ${{ stock.analyst_target_low|default:"-" }}</div>
+                                            <div title="High Target">H: ${{ stock.analyst_target_high|default:"-" }}</div>
+                                        </div>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="font-weight: bold; margin-bottom: 2px;">
+                                        {% if stock.upside_percent > 0 %}
+                                            <span style="color:green">▲ {{ stock.upside_percent|floatformat:2 }}%</span>
+                                        {% else %}
+                                            <span style="color:red">▼ {{ stock.upside_percent|floatformat:2 }}%</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <div style="font-size: 0.85em; color: #666;">
+                                        
+                                        <div title="Potential return to Low Target">
+                                            L: 
+                                            {% if stock.upside_to_low > 0 %}
+                                                <span style="color:green">▲{{ stock.upside_to_low|floatformat:1 }}%</span>
+                                            {% else %}
+                                                <span style="color:red">▼{{ stock.upside_to_low|floatformat:1 }}%</span>
+                                            {% endif %}
+                                        </div>
+
+                                        <div title="Potential return to High Target">
+                                            H: 
+                                            {% if stock.upside_to_high > 0 %}
+                                                <span style="color:green">▲{{ stock.upside_to_high|floatformat:1 }}%</span>
+                                            {% else %}
+                                                <span style="color:red">▼{{ stock.upside_to_high|floatformat:1 }}%</span>
+                                            {% endif %}
+                                        </div>
+
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if stock.dividend_yield %}
+                                    {{ stock.dividend_yield }}%
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if "Undervalued" in stock.verdict %}
+                                        <span class="badge bg-success text-white verdict-badge">
+                                            {{ stock.verdict }}
+                                        </span>
+                                    
+                                    {% elif "Potential" in stock.verdict %}
+                                        <span class="badge bg-primary text-white verdict-badge">
+                                            {{ stock.verdict }}
+                                        </span>
+
+                                    {% elif "Recovery" in stock.verdict %}
+                                        <span class="badge bg-primary text-white verdict-badge">
+                                            {{ stock.verdict }}
+                                        </span>
+
+                                    {% elif "Safe" in stock.verdict or "Defensive" in stock.verdict %}
+                                        <span class="badge bg-purple text-white verdict-badge">
+                                            {{ stock.verdict }}
+                                        </span>
+
+                                    {% elif "Overvalued" in stock.verdict %}
+                                        <span class="badge bg-danger text-white verdict-badge">
+                                            {{ stock.verdict }}
+                                        </span>
+
+                                    {% else %}
+                                        <span class="badge bg-secondary text-white verdict-badge">
+                                            {{ stock.verdict }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <!-- {% if stock.ai_data.score >= 80 %}
+                                        <span class="badge bg-success">Strong Buy</span>
+
+                                    {% elif stock.ai_data.score >= 60 %}
+                                        <span class="badge bg-purple">{{ stock.ai_data.recommendation }}</span>
+
+                                    {% elif stock.ai_data.score <= 20 %}
+                                        <span class="badge bg-danger">High Risk</span>
+
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ stock.ai_data.recommendation|default:"-" }}</span>
+
+                                    {% endif %} -->
+                                    {% if "Strong Buy" in stock.ai_data.recommendation %}
+                                        <span class="badge bg-success">Strong Buy</span>
+                                    {% elif "Buy" in stock.ai_data.recommendation %}
+                                        <span class="badge bg-purple">Buy</span>
+                                    {% elif "Strong Sell" in stock.ai_data.recommendation %}
+                                        <span class="badge bg-danger"><i class="bi bi-graph-down-arrow"></i> Strong Sell</span>
+                                    {% elif "Sell" in stock.ai_data.recommendation %}
+                                        <span class="badge bg-danger bg-opacity-75">Sell</span>
+                                    {% elif "Hold" in stock.ai_data.recommendation %}
+                                        <span class="badge bg-warning text-dark">Hold</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ stock.ai_data.recommendation|default:"-" }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div>
+                                        <span class="badge rounded-pill 
+                                            {% if stock.ai_data.score >= 80 %}bg-success
+                                            {% elif stock.ai_data.score >= 60 %}bg-purple
+                                            {% elif stock.ai_data.score > 20 %}bg-secondary
+                                            {% elif stock.ai_data.score <= 20 %}bg-danger
+                                            {% else %}bg-warning text-dark{% endif %}">
+                                            {{ stock.ai_data.score }}
+                                        </span>
+                                        <span  class="badge rounded-pill 
+                                            {% if stock.ai_data.sell_score >= 70 %}bg-danger
+                                            {% elif stock.ai_data.sell_score >= 40 %}bg-purple 
+                                            {% elif stock.ai_data.sell_score > 20 %}bg-secondary
+                                            {% elif stock.ai_data.sell_score <= 20 %}bg-success
+                                            {% else %}bg-warning text-dark{% endif %}">{{stock.ai_data.sell_score}}</span>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted">
+                                            {{ stock.ai_data.trust_percentage }}% acc of ({{ stock.ai_data.total_predictions }})
+                                        </small>
+                                    </div>
+                                    <div> 
+                                        {% if stock.ai_data.trust_label == "Verified" %}
+                                            <span class="badge bg-success rounded-pill"><i class="bi bi-check2-circle"></i> Verified</span>
+                                        {% elif stock.ai_data.trust_label == "Mixed" %}
+                                            <span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-exclamation-triangle-fill" style="color: #666;"></i> Mixed</span>
+                                        {% elif stock.ai_data.trust_label == "Unreliable" %}
+                                            <span class="badge bg-danger rounded-pill"><i class="bi bi-x-circle"></i> Unreliable</span>
+                                        {% elif stock.ai_data.trust_label == "Learning" %}
+                                            <span class="badge bg-light-grey rounded-pill"><i class="bi bi-question-circle"></i> Learning</span>
+                                        {% else %}
+                                            <span class="badge bg-light-grey rounded-pill">Uncertain</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column justify-center">
+                                    {% if stock.trustworthy_count > 0 or stock.untrustworthy_count > 0 %}
+                                        <div> 
+                                            {# 1. Calculate Total first #}
+                                            {% with total=stock.trustworthy_count|add:stock.untrustworthy_count %}
+                                            
+                                                {% if total > 0 %}
+                                                    {# 2. Calculate Percentage: (Trustworthy / Total) * 100 #}
+                                                    {% widthratio stock.trustworthy_count total 100 %}%
+                                                {% else %}
+                                                    0%
+                                                {% endif %}
+
+                                            {% endwith %}
+                                        </div>
+                                        <div class="d-flex flex-row justify-content-center">
+                                            <div class="badge bg-success bg-opacity-10 text-success border border-success" title="Times Proven Correct">
+                                                ✅ {{ stock.trustworthy_count }}
+                                            </div>
+                                            
+                                            <div class="badge bg-danger bg-opacity-10 text-danger border border-danger ms-1" title="Times Proven Wrong">
+                                                ❌ {{ stock.untrustworthy_count }}
+                                            </div>
+                                        </div>
+                                        
+                                    {% else %}
+                                        <span class="text-muted small fst-italic">No History</span>
+                                    {% endif %}
+                                    </div>
+                                </td>
+                                <!-- <td>{{ stock.ai_data.recommendation }}</td> -->
+                                <td>
+                                    <div style="font-weight: bold;">${{ stock.expected_target_price|floatformat:1 }}</div>
+                                    <div>
+                                        {% if stock.kelly_ai_upside_percent >= 0 %}
+                                            <span style="color:green">▲{{ stock.kelly_ai_upside_percent|floatformat:2 }}%</span>
+                                        {% else %}
+                                            <span style="color:red">▼{{ stock.kelly_ai_upside_percent|floatformat:2 }}%</span>
+                                        {% endif %}
+                                    </div>
+
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div> 
+                                            <small >
+                                                <span class="badge bg-success text-white">{{ stock.kelly_accuracy_score|floatformat:0 }}%</span> acc of ({{ stock.backtest_sample_count }})
+                                            </small>
+                                        </div>
+
+                                        <div> 
+                                            <small >
+                                                <span class="badge bg-danger text-white">{{ stock.kelly_avg_error_margin|floatformat:0 }}%</span>
+                                                 Err of ({{ stock.backtest_sample_count }})
+                                            </small>
+                                        </div>
+                                        
+                                        <div>
+                                            <div>
+                                                {% if stock.kelly_accuracy_score >= 80 and stock.kelly_avg_error_margin <= 5 %}
+                                                    <span class="badge bg-success rounded-pill"><i class="bi bi-check2-circle"></i> Verified</span>
+                                                {% elif stock.kelly_accuracy_score >= 60 and stock.kelly_avg_error_margin <= 10 %}
+                                                    <span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-exclamation-triangle-fill"></i> Mixed</span>
+                                                {% elif stock.kelly_accuracy_score > 20 or stock.kelly_avg_error_margin > 10 %}
+                                                    <span class="badge bg-danger rounded-pill"><i class="bi bi-x-circle"></i> Unreliable</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary rounded-pill">Learning</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6">No matching records found in both databases.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</body>
+
+</html>
